@@ -1,72 +1,68 @@
 import React, { useState, useEffect, useRef } from 'react';
+import Lenis from '@studio-freight/lenis';
 import Navbar from './Pages/Navbar';
 import Home from './Pages/Home';
 import About from './Pages/About';
 import Project from './Pages/Project';
 import Contact from './Pages/Contact';
-import Logo from './Pages/Logo'; // Assuming 'Logo' component is the Technical Stack/Skills section
+import Logo from './Pages/Logo'; 
 
-// Define all section IDs that correspond to Navbar links
 const sectionIds = ['home', 'about', 'skills', 'projects', 'contact']; 
 
 function App() {
   const [activeSection, setActiveSection] = useState('home');
-  const sectionRefs = useRef({}); 
+  const sectionRefs = useRef({});
+  const lenisRef = useRef(null);
 
-  // --- Intersection Observer Logic ---
+  // GLOBAL SMOOTH SCROLL
   useEffect(() => {
-    // 1. Map section IDs to their corresponding DOM elements
+    lenisRef.current = new Lenis({
+      duration: 1.2,
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      smooth: true,
+      mouseMultiplier: 1,
+      smoothTouch: false,
+      touchMultiplier: 2,
+    });
+
+    const raf = (time) => {
+      lenisRef.current?.raf(time);
+      requestAnimationFrame(raf);
+    };
+    
+    requestAnimationFrame(raf);
+
+    return () => lenisRef.current?.destroy();
+  }, []);
+
+  // NAVBAR ACTIVE SECTION TRACKING
+  useEffect(() => {
     sectionIds.forEach(id => {
       const element = document.getElementById(id);
-      if (element) {
-        sectionRefs.current[id] = element;
-      }
+      if (element) sectionRefs.current[id] = element;
     });
 
-    // 2. Setup the Observer
     const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            // Found the section that is currently visible
-            setActiveSection(entry.target.id);
-          }
-        });
-      },
-      {
-        root: null, 
-        // Trigger when the section's center crosses the viewport center
-        rootMargin: '-50% 0px -50% 0px', 
-        threshold: 0,
-      }
+      (entries) => entries.forEach(entry => {
+        if (entry.isIntersecting) setActiveSection(entry.target.id);
+      }),
+      { rootMargin: '-25% 0px -50% 0px', threshold: 0 }
     );
 
-    // 3. Start observing sections
-    Object.values(sectionRefs.current).forEach(section => {
-      observer.observe(section);
-    });
+    Object.values(sectionRefs.current).forEach(section => observer.observe(section));
 
-    return () => {
-      // 4. Cleanup observer on unmount
-      Object.values(sectionRefs.current).forEach(section => {
-        observer.unobserve(section);
-      });
-    };
+    return () => Object.values(sectionRefs.current).forEach(section => observer.unobserve(section));
   }, []); 
 
   return (
-    <>
-      {/* Pass the dynamically tracked activeSection to the Navbar */}
+    <div className="w-full min-h-screen bg-gray-900 text-white overflow-x-hidden">
       <Navbar activeSection={activeSection} />
-      
-      {/* Attach IDs to all sections for Intersection Observer to track */}
       <div id="home"><Home /></div>
       <div id="about"><About /></div>
-      {/* IMPORTANT: Ensure this ID matches the ID in the Navbar's navItems array */}
-      <div id="skills"><Logo /></div> 
+      <div id="skills"><Logo /></div>
       <div id="projects"><Project /></div>
       <div id="contact"><Contact /></div>
-    </>
+    </div>
   );
 }
 
