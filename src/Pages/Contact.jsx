@@ -220,42 +220,25 @@ const ContactForm = () => {
           </div>
         </div>
 
-        <div className="flex justify-center mb-10">
-          <FloatingButton
-            triggerContent={
-              <div className="w-16 h-16 md:w-20 md:h-20 flex items-center justify-center rounded-full 
-                            bg-gradient-to-r from-purple-600 to-cyan-600 
-                            shadow-2xl shadow-purple-900/50 
-                            cursor-pointer transform transition duration-300
-                            hover:scale-110 hover:shadow-cyan-400/60
-                            border-2 border-purple-400/50">
-                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <line x1="12" y1="5" x2="12" y2="19"/>
-                  <line x1="5" y1="12" x2="19" y2="12"/>
-                </svg>
-              </div>
-            }
-          >
-            {socialLinks.map((link) => (
-              <FloatingButtonItem key={link.id}>
-                <a
-                  href={link.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={`w-14 h-14 md:w-16 md:h-16 flex items-center justify-center p-3 rounded-full 
-                            bg-gray-800/90 border border-purple-500/50 shadow-lg shadow-purple-900/50 
-                            transform transition duration-500 
-                            hover:scale-110 hover:bg-gray-700/80 hover:shadow-cyan-400/40 
-                            ${link.color}`}
-                  aria-label={`Link to my ${link.id}`}
-                >
-                  <span className="w-6 h-6 md:w-8 md:h-8">
-                    {link.svg}
-                  </span>
-                </a>
-              </FloatingButtonItem>
-            ))}
-          </FloatingButton>
+        <div className="flex justify-center gap-4 mb-10">
+          {socialLinks.map((link) => (
+            <a
+              key={link.id}
+              href={link.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`w-14 h-14 md:w-16 md:h-16 flex items-center justify-center p-3 rounded-full 
+                        bg-gray-800/90 border border-purple-500/50 shadow-lg shadow-purple-900/50 
+                        transform transition duration-500 
+                        hover:scale-110 hover:bg-gray-700/80 hover:shadow-cyan-400/40 
+                        ${link.color}`}
+              aria-label={`Link to my ${link.id}`}
+            >
+              <span className="w-6 h-6 md:w-8 md:h-8">
+                {link.svg}
+              </span>
+            </a>
+          ))}
         </div>
       </div>
     </div>

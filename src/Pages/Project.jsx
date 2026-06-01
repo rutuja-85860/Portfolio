@@ -22,34 +22,34 @@ import {
 
 const projects = [
   {
-    name: "Investment Portal",
-    type: "Finance Platform",
+    name: "FakeXpose",
+    type: "AI Fake News Detection Platform",
     description:
-      "A comprehensive platform providing real-time investment analytics, AI-powered stock recommendations, and advanced financial insights with predictive modeling.",
-    image: "/public/Images/investment.png",
-    link: "https://github.com/rutuja-85860/Investment-Portal",
-    tags: ["react.js", "tailwind", "api", "chart.js", "finance", "ai"],
-    color: "text-blue-400",
-    borderColor: "border-blue-400",
-    bgGradient: "from-blue-500/10 to-cyan-500/10",
+      "An AI-powered fake news detection web application that analyses news articles and social media content in real time. Uses machine learning models to classify content as real or fake, providing credibility scores and source verification to help users make informed decisions.",
+    image: "/public/Images/fakexpose.png",
+    link: "https://github.com/rutuja-85860",
+    tags: ["React.js", "Python", "Machine Learning", "NLP", "MongoDB", "Node.js", "AI"],
+    color: "text-violet-400",
+    borderColor: "border-violet-400",
+    bgGradient: "from-violet-500/10 to-purple-500/10",
     align: "left",
     status: "Live",
-    year: "2024",
+    year: "2026",
   },
   {
-    name: "Disaster Management System (MERN Stack)",
-    type: "Disaster Platform",
+    name: "Sigro",
+    type: "Sign Language Recognition System",
     description:
-      "A comprehensive real-time disaster management system built using the MERN stack ",
-    image: "/public/Images/disateer.jpg",
-    link: "https://github.com/rutuja-85860/Disaster-Management",
-    tags: ["react.js", "MongoDB", "Express", "Node.js", "tailwind", "next.js", "api",],
-    color: "text-emerald-400",
-    borderColor: "border-emerald-400",
-    bgGradient: "from-emerald-500/10 to-green-500/10",
+      "A real-time sign language recognition system that bridges communication between hearing-impaired individuals and others. Uses computer vision and deep learning to detect and translate hand gestures into text and speech, making communication seamless and accessible.",
+    image: "/public/Images/sigro.png",
+    link: "https://github.com/rutuja-85860",
+    tags: ["Python", "OpenCV", "TensorFlow", "Deep Learning", "React.js", "Computer Vision"],
+    color: "text-cyan-400",
+    borderColor: "border-cyan-400",
+    bgGradient: "from-cyan-500/10 to-teal-500/10",
     align: "right",
     status: "Beta",
-    year: "2024",
+    year: "2026",
   },
 ];
 
@@ -139,34 +139,32 @@ const certificates = [
 ];
 
 const experiences = [
- 
+
   {
-    title: "Web Developer",
-    company: " Prodigy InfoTech.",
-    duration: "1st-oct-2024 - 31st-oct-2024",
-    
+    title: "Intern — Full Stack Developer & ML Engineer",
+    company: "Vortex Web Technologies, Nerul",
+    duration: "Jan 2026 – Apr 2026",
     description:
-      "Developed responsive web applications and improved user experience across multiple products. Collaborated with design teams to implement pixel-perfect interfaces.",
-    skills: ["React", "MongoDB", "Git"],
-    color: "text-emerald-400",
-    borderColor: "border-emerald-400",
-    bgGradient: "from-emerald-500/10 to-green-500/10",
-    align: "right",
+      "Engineered and integrated a MySQL backend for a healthcare consultation platform using RESTful APIs and Node.js. Developed a full-stack agriculture marketplace platform enabling farmers, buyers, and transporters to manage product workflows and KYC verification. Integrated a plant disease detection ML model using FastAPI and Node.js for automated crop analysis.",
+    skills: ["Node.js", "MySQL", "FastAPI", "Python", "ML Integration", "RESTful APIs", "React.js"],
+    color: "text-blue-400",
+    borderColor: "border-blue-400",
+    bgGradient: "from-blue-500/10 to-indigo-500/10",
+    align: "left",
     icon: Monitor,
     image: "/public/Images/prodogy.jpeg",
   },
-  
+
   {
-    title: "Full Stack Java Training ",
-    company: "  CNC Web World",
+    title: "Full Stack Development Training",
+    company: "CNC Web World",
     duration: "Jan 2025 – July 2025",
-    
     description:
-      "This training helped me strengthen my skills in Java, backend development, frontend integration, and full-stack project implementation. ",
-    skills: ["React", "MongoDB","Java","Fullstack Development", "Git","Github"],
-    color: "text-emerald-400",
-    borderColor: "border-emerald-400",
-    bgGradient: "from-emerald-500/10 to-green-500/10",
+      "Completed intensive full-stack development training strengthening skills in Java, backend development, frontend integration, and full-stack project implementation across real-world projects.",
+    skills: ["React.js", "MongoDB", "Java", "Full Stack Development", "Git", "GitHub"],
+    color: "text-purple-400",
+    borderColor: "border-purple-400",
+    bgGradient: "from-purple-500/10 to-violet-500/10",
     align: "right",
     icon: Monitor,
     image: "/public/Images/cnc.jpeg",
@@ -247,7 +245,7 @@ function Project() {
 
   // --- ADDED CONSTANT FOR RESUME FILE PATH ---
   // NOTE: You MUST place your 'Rutu Resume.pdf' file inside your project's 'public' folder.
-  const RESUME_FILE_PATH = "/Rutu Resume.pdf";
+  const RESUME_FILE_PATH = "/resume iupdated.pdf";
 
   useEffect(() => {
     const handleMouseMove = (e) => {

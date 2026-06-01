@@ -5,9 +5,9 @@ import Home from './Pages/Home';
 import About from './Pages/About';
 import Project from './Pages/Project';
 import Contact from './Pages/Contact';
-import Logo from './Pages/Logo'; 
+import Logo from './Pages/Logo';
 
-const sectionIds = ['home', 'about', 'skills', 'projects', 'contact']; 
+const sectionIds = ['home', 'about', 'skills', 'projects', 'contact'];
 
 function App() {
   const [activeSection, setActiveSection] = useState('home');
@@ -29,7 +29,7 @@ function App() {
       lenisRef.current?.raf(time);
       requestAnimationFrame(raf);
     };
-    
+
     requestAnimationFrame(raf);
 
     return () => lenisRef.current?.destroy();
@@ -52,7 +52,7 @@ function App() {
     Object.values(sectionRefs.current).forEach(section => observer.observe(section));
 
     return () => Object.values(sectionRefs.current).forEach(section => observer.unobserve(section));
-  }, []); 
+  }, []);
 
   return (
     <div className="w-full min-h-screen bg-gray-900 text-white overflow-x-hidden">

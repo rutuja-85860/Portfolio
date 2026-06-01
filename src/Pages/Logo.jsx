@@ -467,33 +467,20 @@ const backendLogos = [
 ];
 
 function Logo() {
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-
-  useEffect(() => {
-    const handleMouseMove = (e) => {
-      setMousePosition({ x: e.clientX, y: e.clientY });
-    };
-
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, []);
 
   return (
     <div className="min-h-screen bg-gray-900 text-white relative overflow-hidden">
-      {/* Animated Background */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div 
-          className="absolute w-96 h-96 bg-blue-500/10 rounded-full blur-3xl transition-all duration-1000"
-          style={{
-            left: `${mousePosition.x / 20}px`,
-            top: `${mousePosition.y / 20}px`,
-          }}
-        />
-        <div className="absolute top-1/4 right-1/4 w-64 h-64 bg-purple-500/10 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-1/3 left-1/6 w-80 h-80 bg-pink-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1000ms' }}></div>
+
+
+      {/* ── Ambient colour blobs — same palette as Home.jsx ── */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none z-[1]">
+        <div className="absolute top-[15%] left-[10%] w-64 h-64 sm:w-80 sm:h-80 bg-blue-500/10 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute top-1/4 right-1/4 w-64 h-64 bg-purple-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1400ms' }} />
+        <div className="absolute bottom-1/3 left-[16%] w-80 h-80 bg-pink-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2500ms' }} />
+        <div className="absolute bottom-[10%] right-[8%] w-80 h-80 sm:w-96 sm:h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1000ms' }} />
       </div>
 
-      <div className="container mx-auto px-6 lg:px-12 py-20 relative z-10">
+      <div className="container mx-auto px-6 lg:px-12 pt-28 pb-20 relative z-10">
         {/* Header */}
         <div className="text-center mb-16 opacity-0 animate-[fadeInUp_1s_ease-out_0.2s_forwards]">
           <h1 className="text-5xl md:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-purple-600 mb-4">
@@ -568,19 +555,10 @@ function Logo() {
           </div>
         </div>
 
-        {/* Additional Info Section */}
-        <div className="mt-16 text-center opacity-0 animate-[fadeInUp_1s_ease-out_0.8s_forwards]">
-          <div className="bg-gray-800/30 backdrop-blur-sm rounded-2xl p-8 border border-gray-700/30 max-w-4xl mx-auto">
-            <p className="text-gray-300 text-lg leading-relaxed font-light">
-              Continuously expanding my skill set with cutting-edge technologies to deliver 
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500 font-semibold"> exceptional digital experiences</span>
-            </p>
-          </div>
-        </div>
       </div>
 
       {/* Custom Styles */}
-      <style jsx>{`
+      <style>{`
         @keyframes fadeInUp {
           from { opacity: 0; transform: translateY(30px); }
           to { opacity: 1; transform: translateY(0); }

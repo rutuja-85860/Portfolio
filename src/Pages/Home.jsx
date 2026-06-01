@@ -1,264 +1,351 @@
-import React, { useState, useEffect } from 'react';
-import Spline from '@splinetool/react-spline';
-import FloatingLines from '../Components/FloatingLines.jsx'; // ⭐ Make sure this line exists and points to the correct component path ⭐
+import React, {
+  useState,
+  useCallback,
+  memo,
+  lazy,
+  Suspense,
+} from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import FloatingLines from '../Components/FloatingLines.jsx';
 
+/* ── Lazy-load Spline (keeps it out of the main bundle) ────── */
+const Spline = lazy(() => import('@splinetool/react-spline'));
 
+/* ═══════════════════════════════════════════════════════════════
+   TypewriterText  — fully memoised, zero upstream re-renders
+═══════════════════════════════════════════════════════════════ */
+const TypewriterText = memo(({ texts, typingSpeed = 90, deletingSpeed = 45, pauseTime = 1800 }) => {
+  const [idx,      setIdx]      = React.useState(0);
+  const [current,  setCurrent]  = React.useState('');
+  const [deleting, setDeleting] = React.useState(false);
+  const [cursor,   setCursor]   = React.useState(true);
 
-// --- TypewriterText Component (No changes needed, it is fine) ---
-const TypewriterText = ({ texts, typingSpeed = 100, deletingSpeed = 50, pauseTime = 2000 }) => {
-  const [currentTextIndex, setCurrentTextIndex] = useState(0);
-  const [currentText, setCurrentText] = useState('');
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [showCursor, setShowCursor] = useState(true);
+  React.useEffect(() => {
+    const target = texts[idx];
+    let t;
+    if (!deleting) {
+      if (current.length < target.length)
+        t = setTimeout(() => setCurrent(target.slice(0, current.length + 1)), typingSpeed);
+      else
+        t = setTimeout(() => setDeleting(true), pauseTime);
+    } else {
+      if (current.length > 0)
+        t = setTimeout(() => setCurrent(current.slice(0, -1)), deletingSpeed);
+      else { setDeleting(false); setIdx((p) => (p + 1) % texts.length); }
+    }
+    return () => clearTimeout(t);
+  }, [current, idx, deleting, texts, typingSpeed, deletingSpeed, pauseTime]);
 
+  React.useEffect(() => {
+    const iv = setInterval(() => setCursor((p) => !p), 530);
+    return () => clearInterval(iv);
+  }, []);
 
-  useEffect(() => {
-    let timeout;
-    const targetText = texts[currentTextIndex];
+  return (
+    <span className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-semibold text-blue-300 tracking-wide">
+      {current}
+      <span className="font-light ml-0.5" style={{ opacity: cursor ? 1 : 0, transition: 'opacity 0.1s' }}>|</span>
+    </span>
+  );
+});
 
+/* ═══════════════════════════════════════════════════════════════
+   Holographic loader shown while Spline scene downloads
+═══════════════════════════════════════════════════════════════ */
+const SplineLoader = memo(() => (
+  <div className="absolute inset-0 flex flex-col items-center justify-center gap-5">
+    <div className="relative w-20 h-20">
+      {[0, 1, 2].map((i) => (
+        <span
+          key={i}
+          className="absolute inset-0 rounded-full border border-blue-400/30"
+          style={{ animation: `spline-ping 1.9s ease-out ${i * 0.52}s infinite` }}
+        />
+      ))}
+      <span className="absolute inset-0 flex items-center justify-center">
+        <span className="w-4 h-4 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 animate-pulse shadow-lg shadow-blue-500/50" />
+      </span>
+    </div>
+    <p className="text-[10px] sm:text-xs tracking-[0.28em] uppercase text-blue-300/50 font-mono animate-pulse">
+      Loading 3D Scene…
+    </p>
+  </div>
+));
 
-    if (!isDeleting) {
-      // Typing
-      if (currentText.length < targetText.length) {
-        timeout = setTimeout(() => {
-          setCurrentText(targetText.slice(0, currentText.length + 1));
-        }, typingSpeed);
-      } else {
-        // Pause before deleting
-        timeout = setTimeout(() => {
-          setIsDeleting(true);
-        }, pauseTime);
-      }
-    } else {
-      // Deleting
-      if (currentText.length > 0) {
-        timeout = setTimeout(() => {
-          setCurrentText(currentText.slice(0, -1));
-        }, deletingSpeed);
-      } else {
-        // Move to next text
-        setIsDeleting(false);
-        setCurrentTextIndex((prev) => (prev + 1) % texts.length);
-      }
-    }
-
-
-    return () => clearTimeout(timeout);
-  }, [currentText, currentTextIndex, isDeleting, texts, typingSpeed, deletingSpeed, pauseTime]);
-
-
-  useEffect(() => {
-    // Cursor blinking logic
-    const cursorInterval = setInterval(() => {
-      setShowCursor(prev => !prev);
-    }, 500);
-
-
-    return () => clearInterval(cursorInterval);
-  }, []);
-
-
-  return (
-    <span className="text-2xl md:text-3xl lg:text-4xl font-semibold text-blue-300"> 
-      {currentText}
-      <span className={`${showCursor ? 'opacity-100' : 'opacity-0'} transition-opacity duration-100 font-normal`}> 
-        |
-      </span>
-    </span>
-  );
+/* ═══════════════════════════════════════════════════════════════
+   Framer-motion variants
+═══════════════════════════════════════════════════════════════ */
+const heroContainer = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.13, delayChildren: 0.1 } },
+};
+const heroItem = {
+  hidden:  { opacity: 0, y: 26 },
+  show:    { opacity: 1, y: 0, transition: { duration: 0.62, ease: [0.22, 1, 0.36, 1] } },
+};
+const modelVariant = {
+  hidden:  { opacity: 0, scale: 0.96 },
+  show:    { opacity: 1, scale: 1, transition: { duration: 1.1, ease: [0.22, 1, 0.36, 1], delay: 0.2 } },
 };
 
-// --- Home Component (Modified) ---
+/* ═══════════════════════════════════════════════════════════════
+   Home
+═══════════════════════════════════════════════════════════════ */
 export default function Home() {
-  const roles = [
-    'Full Stack Developer',
-    'Web Developer', 
-    'Frontend Developer',
-    'Computer Engineer'
-  ];
+  const roles = ['Full Stack Developer', 'Web Developer', 'Frontend Developer', 'Computer Engineer'];
 
+  const [splineReady, setSplineReady] = useState(false);
 
-  const handleViewWork = () => {
-    window.open('https://github.com/rutuja-85860', '_blank');
-  };
-  const handleResume = () => {
-    const fileId = '1_V8sR5MFs5dOI0JLMLlKjOAnCrHp5IxF';
-    const viewUrl = `https://drive.google.com/file/d/${fileId}/view`;
-    window.open(viewUrl, '_blank');
-  };
+  const onSplineLoad  = useCallback(() => setTimeout(() => setSplineReady(true), 280), []);
+  const onViewWork    = useCallback(() => window.open('https://github.com/rutuja-85860', '_blank', 'noopener,noreferrer'), []);
+  const onResume      = useCallback(() => window.open('/resume iupdated.pdf', '_blank', 'noopener,noreferrer'), []);
 
+  return (
+    <div
+      id="home"
+      className="relative min-h-[100dvh] bg-gray-900 text-white overflow-hidden"
+    >
+      {/* ── Floating lines (decorative bg) ─────────────────────── */}
+      <div className="absolute inset-0 z-0 pointer-events-none">
+        <FloatingLines
+          enabledWaves={['top', 'middle', 'bottom']}
+          lineCount={[8, 12, 16]}
+          lineDistance={[8, 6, 4]}
+          bendRadius={5}
+          bendStrength={-0.5}
+          interactive={false}
+          parallax={false}
+        />
+      </div>
 
-  return (
-    // REFINEMENT: Use min-h-[100dvh] for better mobile viewport height handling
-    <div className="min-h-[100dvh] bg-gray-900 text-white flex items-center justify-center overflow-hidden relative" id="home">
-        {/* ⭐ FLOATING LINES USAGE (REMAINS THE SAME) ⭐ */}
-        <div className="absolute inset-0 z-0">
-            <FloatingLines 
-                enabledWaves={['top', 'middle', 'bottom']}
-                lineCount={[10, 15, 20]}
-                lineDistance={[8, 6, 4]}
-                bendRadius={5.0}
-                bendStrength={-0.5}
-                interactive={true}
-                parallax={true}
-            />
-        </div>
-        {/* ⭐ END FLOATING LINES ADDITION ⭐ */}
+      {/* ── Ambient colour blobs ───────────────────────────────── */}
+      <div className="absolute inset-0 pointer-events-none z-[1]">
+        <div className="absolute top-[15%]  left-[10%]  w-64  h-64  sm:w-80  sm:h-80  bg-blue-500/10   rounded-full blur-3xl animate-pulse" />
+        <div className="absolute bottom-[10%] right-[8%]  w-80  h-80  sm:w-96  sm:h-96  bg-purple-500/10 rounded-full blur-3xl animate-pulse [animation-delay:1.4s]" />
+        <div className="absolute top-[50%]  right-[30%] w-40  h-40                       bg-pink-500/8    rounded-full blur-2xl animate-pulse [animation-delay:2.5s]" />
+      </div>
 
-    {/* REFINEMENT: Removed h-screen and changed to min-h-screen to allow proper flow on mobile */}
-      <div className="container mx-auto px-6 lg:px-12 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center min-h-screen lg:h-screen py-20 lg:py-0 z-10">
-        
-        {/* Left Side - Text Content */}
-    {/* REFINEMENT: Added lg:justify-start to align content to the top on desktop while preserving mobile centering via items-center on parent grid */}
-        <div className="space-y-8 z-20 order-2 lg:order-1 pt-20 lg:pt-0 flex flex-col items-center text-center lg:items-start lg:text-left"> 
-          <div className="space-y-6">
-            
-            {/* Greeting */}
-            <div className="opacity-0 animate-[fadeInUp_1s_ease-out_0.2s_forwards]">
-              <h1 className="text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight bg-gradient-to-r from-purple-400 via-pink-500 to-red-500 bg-clip-text text-transparent drop-shadow-lg">
-                Hello
-              </h1>
-            </div>
-            
-            {/* Name */}
-            <div className="opacity-0 animate-[fadeInUp_1s_ease-out_0.4s_forwards]">
-              <h2 className="text-5xl md:text-6xl lg:text-8xl font-black"> 
-                I'm <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500 drop-shadow-xl">Rutuja Patil</span> 
-              </h2>
-            </div>
-            
-            {/* Typing Animation */}
-    {/* REFINEMENT: Increased min-h to ensure it doesn't jump during typing/deleting */}
-            <div className="opacity-0 animate-[fadeInUp_1s_ease-out_0.6s_forwards] h-16 min-h-[4rem]"> 
-              <TypewriterText texts={roles} typingSpeed={100} deletingSpeed={50} pauseTime={1500} />
-            </div>
-          </div>
-          
-          {/* Additional Info */}
-    {/* REFINEMENT: Added mx-auto for mobile centering */}
-          <div className="opacity-0 animate-[fadeInUp_1s_ease-out_0.8s_forwards] mx-auto lg:mx-0">
-            <p className="text-lg md:text-xl text-gray-400 max-w-lg leading-relaxed border-l-4 border-blue-500 pl-4 py-1 italic text-left"> 
-              Aspiring Computer Engineer passionate about creating innovative digital solutions and bringing ideas to life through code. Specialized in MERN stack development with hands-on experience in full-stack projects.
-            </p>
-          </div>
-          
-          {/* Call to Action */}
-          <div className="opacity-0 animate-[fadeInUp_1s_ease-out_1s_forwards]">
-    {/* REFINEMENT: Added justify-center for mobile button centering */}
-            <div className="flex space-x-4 justify-center lg:justify-start">
-              <button 
-                onClick={handleViewWork}
-                className="px-8 py-3 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full font-bold hover:from-blue-600 hover:to-purple-700 transform hover:scale-[1.03] transition-all duration-300 shadow-xl shadow-purple-500/30 cursor-pointer"
-              >
-                View My Work
-              </button>
-              <button 
-                onClick={handleResume}
-                className="px-8 py-3 border-2 border-gray-600 rounded-full font-semibold text-gray-300 hover:border-blue-400 hover:text-blue-400 transform hover:scale-[1.03] transition-all duration-300 shadow-md hover:shadow-lg cursor-pointer"
-              >
-                Resume
-              </button>
-            </div>
-          </div>
-        </div>
-        
-        {/* Right Side - 3D Model */}
-    {/* REFINEMENT: Gave a fixed aspect ratio for mobile and ensured it stretches on desktop. */}
-        <div className="relative h-full w-full aspect-square lg:aspect-auto opacity-0 animate-[fadeIn_1.5s_ease-out_0.5s_forwards] order-1 lg:order-2 flex items-center justify-center z-10"> 
-            <div className="spline-container w-full h-full max-h-[500px] lg:max-h-none lg:w-[120%] lg:-mr-[20%]"> 
-                <Spline scene="https://prod.spline.design/AumRRd313EiV67lW/scene.splinecode" />
-            </div>
-        </div>
-      </div>
-      
-      {/* Background Elements - Z-20 to be above FloatingLines (Z-0) but below content (Z-10/20) */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none z-20"> 
-        <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-blue-500/20 rounded-full blur-3xl opacity-50 animate-pulse"></div>
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl opacity-50 animate-pulse delay-1000"></div>
-      </div>
-      
-      {/* Bottom fade overlay - Z-30 to be on top of everything */}
-      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-gray-900 via-gray-900/80 to-transparent pointer-events-none z-30" />
-      
-      {/* Custom Styles - No changes needed here, as they handle animations and Spline cleanup */}
-      <style jsx>{`
-        @keyframes fadeInUp {
-          from {
-            opacity: 0;
-            transform: translateY(30px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-        
-        @keyframes fadeIn {
-          from {
-            opacity: 0;
-          }
-          to {
-            opacity: 1;
-          }
-        }
-        
-        /* Spline container styling for proper background and fit */
-        .spline-container {
-          position: relative;
-          width: 100%;
-          height: 100%;
-          /* Ensure the background of the spline canvas matches the body */
-          background-color: #111827; /* Tailwind's gray-900 */
-          overflow: hidden;
-        }
-        
-        .spline-container canvas {
-          width: 100% !important;
-          height: 100% !important;
-          /* Important: object-fit: contain can sometimes be better for 3D scenes */
-          object-fit: contain; 
-        }
-        
-        /* Hide Spline watermark */
-        .spline-container::after {
-          content: '';
-          position: absolute;
-          bottom: 0;
-          left: 0;
-          width: 100%;
-          height: 60px;
-          background: linear-gradient(to top, #111827, transparent); /* Use gray-900 color here */
-          pointer-events: none;
-          z-index: 10;
-        }
-        
-        /* Additional enhancement for name */
-        .text-transparent {
-          -webkit-background-clip: text;
-          background-clip: text;
-          -webkit-text-fill-color: transparent;
-          /* Stronger shadow for floating effect */
-          text-shadow: 0 0 40px rgba(168, 85, 247, 0.7); 
-        }
-        
-        /* Responsive adjustments (Kept your original media query and added d-unit fix) */
-        @media (max-width: 1024px) {
-          .spline-container {
-            height: 100%;
-            min-height: 400px;
-            width: 100% !important;
-            margin-right: 0 !important;
-            object-fit: cover;
-          }
-        }
+      {/* ══════════════════════════════════════════════════════════
+          LAYOUT — stacked on mobile, side-by-side on desktop.
+          The 3D model takes the FULL right column on desktop and
+          becomes a tall block ABOVE the text on mobile.
+      ══════════════════════════════════════════════════════════ */}
+      <div className="relative z-10 min-h-[100dvh] flex flex-col lg:flex-row lg:items-center">
 
-        /* Modern mobile height fix for d-units */
-        @supports (height: 100dvh) {
-            .min-h-\[100dvh\] {
-                min-height: 100dvh;
-            }
+        {/* ── 3D MODEL (top on mobile / right on desktop) ──────── */}
+        <motion.div
+          variants={modelVariant}
+          initial="hidden"
+          animate="show"
+          /* Mobile: full-width block above text, fixed height.
+             Desktop: takes ~55% of the width, full viewport height */
+          className="
+            w-full
+            h-[55vw] min-h-[260px] max-h-[440px]
+            sm:h-[48vw] sm:max-h-[520px]
+            lg:absolute lg:inset-y-0 lg:right-0 lg:w-[58%] lg:h-full lg:max-h-none
+            relative flex-shrink-0
+          "
+        >
+          {/* Spline wrapper — transparent bg so model floats freely */}
+          <div className="spline-wrap absolute inset-0">
+
+            {/* Holographic loader */}
+            <AnimatePresence>
+              {!splineReady && (
+                <motion.div
+                  key="loader"
+                  initial={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.65, ease: 'easeOut' }}
+                  className="absolute inset-0 z-20 flex items-center justify-center"
+                  style={{ background: 'rgba(17,24,39,0.85)' }}
+                >
+                  <SplineLoader />
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* The actual 3D scene */}
+            <Suspense fallback={null}>
+              <Spline
+                scene="https://prod.spline.design/AumRRd313EiV67lW/scene.splinecode"
+                onLoad={onSplineLoad}
+                style={{ width: '100%', height: '100%', background: 'transparent' }}
+              />
+            </Suspense>
+          </div>
+
+        </motion.div>
+
+        {/* ── HERO TEXT (bottom on mobile / left on desktop) ───── */}
+        <motion.div
+          variants={heroContainer}
+          initial="hidden"
+          animate="show"
+          className="
+            relative z-20
+            w-full
+            px-5 sm:px-8
+            pt-6 pb-16
+            sm:pt-8 sm:pb-20
+            lg:w-[50%] lg:pl-12 lg:pr-4 lg:py-0 lg:min-h-screen
+            flex flex-col justify-center
+            items-center text-center
+            lg:items-start lg:text-left
+          "
+        >
+          {/* Greeting */}
+          <motion.div variants={heroItem}>
+            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight bg-gradient-to-r from-purple-400 via-pink-500 to-red-400 bg-clip-text text-transparent leading-none mb-3">
+              Hello
+            </h1>
+          </motion.div>
+
+          {/* Name */}
+          <motion.div variants={heroItem}>
+            <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black leading-tight tracking-tight mb-4">
+              I'm{' '}
+              <span className="name-gradient">
+                Rutuja Patil
+              </span>
+            </h2>
+          </motion.div>
+
+          {/* Typewriter role */}
+          <motion.div variants={heroItem} className="h-10 sm:h-12 flex items-center mb-4">
+            <TypewriterText texts={roles} />
+          </motion.div>
+
+          {/* Description */}
+          <motion.div variants={heroItem} className="max-w-md w-full mx-auto lg:mx-0 mb-7">
+            <p className="text-sm sm:text-base md:text-lg text-gray-400 leading-relaxed border-l-[3px] border-blue-500 pl-4 py-0.5 italic text-left">
+              Aspiring Computer Engineer passionate about building innovative digital
+              solutions. Specialised in MERN stack development with hands-on experience
+              in full-stack projects.
+            </p>
+          </motion.div>
+
+          {/* CTA buttons */}
+          <motion.div variants={heroItem}>
+            <div className="flex flex-wrap gap-3 sm:gap-4 justify-center lg:justify-start">
+
+              {/* View My Work ─ filled primary */}
+              <motion.button
+                id="btn-view-work"
+                onClick={onViewWork}
+                whileHover={{ scale: 1.055, y: -2 }}
+                whileTap={{ scale: 0.96 }}
+                transition={{ type: 'spring', stiffness: 340, damping: 22 }}
+                className="relative group px-6 sm:px-7 py-3 sm:py-3.5 rounded-full font-bold text-sm sm:text-base tracking-wide text-white overflow-hidden cursor-pointer"
+                style={{
+                  background:  'linear-gradient(135deg,#3b82f6,#7c3aed)',
+                  boxShadow:   '0 0 28px rgba(99,102,241,0.38)',
+                }}
+              >
+                <span className="absolute inset-0 rounded-full bg-gradient-to-r from-blue-600 to-purple-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                <span className="absolute inset-0 rounded-full ring-2 ring-purple-400/0 group-hover:ring-purple-400/50 transition-all duration-300" />
+                <span className="relative z-10 flex items-center gap-2">
+                  View My Work
+                  <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                  </svg>
+                </span>
+              </motion.button>
+
+              {/* Resume ─ outlined secondary */}
+              <motion.button
+                id="btn-resume"
+                onClick={onResume}
+                whileHover={{ scale: 1.055, y: -2 }}
+                whileTap={{ scale: 0.96 }}
+                transition={{ type: 'spring', stiffness: 340, damping: 22 }}
+                className="relative group px-6 sm:px-7 py-3 sm:py-3.5 rounded-full font-semibold text-sm sm:text-base tracking-wide cursor-pointer border-2 border-gray-600/80 text-gray-300 overflow-hidden"
+              >
+                <span className="absolute inset-0 rounded-full bg-gradient-to-r from-blue-500/0 to-purple-500/0 group-hover:from-blue-500/12 group-hover:to-purple-500/12 transition-all duration-300" />
+                <span className="absolute inset-0 rounded-full border-2 border-transparent group-hover:border-blue-400/55 transition-all duration-300" />
+                <span
+                  className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                  style={{ boxShadow: '0 0 22px rgba(96,165,250,0.22)' }}
+                />
+                <span className="relative z-10 flex items-center gap-2 group-hover:text-blue-300 transition-colors duration-300">
+                  Resume
+                  <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                </span>
+              </motion.button>
+            </div>
+          </motion.div>
+        </motion.div>
+      </div>
+
+      {/* ── Bottom fade to blend into next section ─────────────── */}
+      <div
+        className="absolute bottom-0 left-0 right-0 h-24 sm:h-32 pointer-events-none z-30"
+        style={{ background: 'linear-gradient(to top, #111827 0%, rgba(17,24,39,0.5) 60%, transparent 100%)' }}
+      />
+
+      {/* ── Component-scoped keyframes ─────────────────────────── */}
+      <style>{`
+        /* Spline canvas — fully transparent bg so the model floats */
+        .spline-wrap canvas {
+          width:  100% !important;
+          height: 100% !important;
+          background: transparent !important;
         }
-      `}</style>
-    </div>
-  );
+
+        /* Hide the "Built with Spline" watermark tag injected by Spline */
+        .spline-wrap a[href*="spline"],
+        .spline-wrap a[href*="spline.design"],
+        a[href*="spline.design"],
+        [class*="spline"] a,
+        canvas + a,
+        canvas ~ a {
+          display: none !important;
+          pointer-events: none !important;
+          visibility: hidden !important;
+          opacity: 0 !important;
+          width: 0 !important;
+          height: 0 !important;
+          overflow: hidden !important;
+        }
+
+        /* Flowing name gradient */
+        .name-gradient {
+          background: linear-gradient(
+            90deg,
+            #f472b6,
+            #a78bfa,
+            #60a5fa,
+            #34d399,
+            #fbbf24,
+            #f472b6
+          );
+          background-size: 250% auto;
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
+          color: transparent;
+          animation: name-flow 5s linear infinite;
+        }
+        @keyframes name-flow {
+          0%   { background-position: 0%   center; }
+          100% { background-position: 250% center; }
+        }
+
+        /* Loader ring pulse */
+        @keyframes spline-ping {
+          0%   { transform: scale(0.55); opacity: 0.75; }
+          80%  { transform: scale(2.1);  opacity: 0;    }
+          100% { transform: scale(2.1);  opacity: 0;    }
+        }
+
+        /* dvh fallback */
+        @supports (height: 100dvh) {
+          .min-h-\\[100dvh\\] { min-height: 100dvh; }
+        }
+      `}</style>
+    </div>
+  );
 }
