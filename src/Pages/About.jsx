@@ -115,7 +115,7 @@ const About = () => {
                 transition={{ duration: 0.6, ease: "easeOut" }}
               >
                 <img
-                  src="/public/Images/Gemini_Generated_Image_4gzbth4gzbth4gzb.png"
+                  src="/Images/Gemini_Generated_Image_4gzbth4gzbth4gzb.png"
                   alt="Rutuja Patil"
                   className="w-full h-full object-cover rounded-[1.5rem]"
                   loading="lazy"

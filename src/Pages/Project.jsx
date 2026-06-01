@@ -26,7 +26,7 @@ const projects = [
     type: "AI Fake News Detection Platform",
     description:
       "An AI-powered fake news detection web application that analyses news articles and social media content in real time. Uses machine learning models to classify content as real or fake, providing credibility scores and source verification to help users make informed decisions.",
-    image: "/public/Images/fakexpose.png",
+    image: "/Images/fakexpose.png",
     link: "https://github.com/rutuja-85860",
     tags: ["React.js", "Python", "Machine Learning", "NLP", "MongoDB", "Node.js", "AI"],
     color: "text-violet-400",
@@ -41,7 +41,7 @@ const projects = [
     type: "Sign Language Recognition System",
     description:
       "A real-time sign language recognition system that bridges communication between hearing-impaired individuals and others. Uses computer vision and deep learning to detect and translate hand gestures into text and speech, making communication seamless and accessible.",
-    image: "/public/Images/sigro.png",
+    image: "/Images/sigro.png",
     link: "https://github.com/rutuja-85860",
     tags: ["Python", "OpenCV", "TensorFlow", "Deep Learning", "React.js", "Computer Vision"],
     color: "text-cyan-400",
@@ -65,7 +65,7 @@ const certificates = [
     bgGradient: "from-purple-500/10 to-pink-500/10",
     align: "left",
     icon: Code,
-    certificateFile: "/public/Images/accenture.pdf",
+    certificateFile: "/Images/accenture.pdf",
     rating: 5,
   },
   {
@@ -84,7 +84,7 @@ const certificates = [
     bgGradient: "from-yellow-500/10 to-orange-500/10",
     align: "right",
     icon: Layers,
-    certificateFile: "/public/Images/cybersecruity.pdf",
+    certificateFile: "/Images/cybersecruity.pdf",
     rating: 5,
   },
   {
@@ -103,7 +103,7 @@ const certificates = [
     bgGradient: "from-green-500/10 to-emerald-500/10",
     align: "left",
     icon: BarChart3,
-    certificateFile: "/public/Images/data visualization.pdf",
+    certificateFile: "/Images/data visualization.pdf.pdf",
     rating: 5,
   },
   {
@@ -117,7 +117,7 @@ const certificates = [
     bgGradient: "from-orange-500/10 to-red-500/10",
     align: "right",
     icon: Cloud,
-    certificateFile: "/public/Images/AWS.pdf",
+    certificateFile: "/Images/AWS.pdf",
     rating: 5,
   },
   {
@@ -132,7 +132,7 @@ const certificates = [
     bgGradient: "from-blue-500/10 to-indigo-500/10",
     align: "left",
     icon: Database,
-    certificateFile: "/public/Images/Data Analyst-Certificate.pdf",
+    certificateFile: "/Images/Data Analyst-Certificate.pdf",
     rating: 5,
   },
  
@@ -152,7 +152,7 @@ const experiences = [
     bgGradient: "from-blue-500/10 to-indigo-500/10",
     align: "left",
     icon: Monitor,
-    image: "/public/Images/prodogy.jpeg",
+    image: "/Images/Prodogy.jpeg",
   },
 
   {
@@ -167,7 +167,7 @@ const experiences = [
     bgGradient: "from-purple-500/10 to-violet-500/10",
     align: "right",
     icon: Monitor,
-    image: "/public/Images/cnc.jpeg",
+    image: "/Images/cnc.jpeg",
   },
 ];
 
