@@ -98,7 +98,7 @@ export default function Home() {
 
   const onSplineLoad  = useCallback(() => setTimeout(() => setSplineReady(true), 280), []);
   const onViewWork    = useCallback(() => window.open('https://github.com/rutuja-85860', '_blank', 'noopener,noreferrer'), []);
-  const onResume      = useCallback(() => window.open('/resume iupdated.pdf', '_blank', 'noopener,noreferrer'), []);
+  const onResume = useCallback(() => window.open('/Images/resume%20updated.pdf', '_blank', 'noopener,noreferrer'), []);
 
   return (
     <div
@@ -137,8 +137,6 @@ export default function Home() {
           variants={modelVariant}
           initial="hidden"
           animate="show"
-          /* Mobile: full-width block above text, fixed height.
-             Desktop: takes ~55% of the width, full viewport height */
           className="
             w-full
             h-[55vw] min-h-[260px] max-h-[440px]
@@ -288,14 +286,12 @@ export default function Home() {
 
       {/* ── Component-scoped keyframes ─────────────────────────── */}
       <style>{`
-        /* Spline canvas — fully transparent bg so the model floats */
         .spline-wrap canvas {
           width:  100% !important;
           height: 100% !important;
           background: transparent !important;
         }
 
-        /* Hide the "Built with Spline" watermark tag injected by Spline */
         .spline-wrap a[href*="spline"],
         .spline-wrap a[href*="spline.design"],
         a[href*="spline.design"],
@@ -311,7 +307,6 @@ export default function Home() {
           overflow: hidden !important;
         }
 
-        /* Flowing name gradient */
         .name-gradient {
           background: linear-gradient(
             90deg,
@@ -334,14 +329,12 @@ export default function Home() {
           100% { background-position: 250% center; }
         }
 
-        /* Loader ring pulse */
         @keyframes spline-ping {
           0%   { transform: scale(0.55); opacity: 0.75; }
           80%  { transform: scale(2.1);  opacity: 0;    }
           100% { transform: scale(2.1);  opacity: 0;    }
         }
 
-        /* dvh fallback */
         @supports (height: 100dvh) {
           .min-h-\\[100dvh\\] { min-height: 100dvh; }
         }

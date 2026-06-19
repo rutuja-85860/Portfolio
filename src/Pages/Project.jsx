@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Code,
@@ -23,12 +23,16 @@ import {
 const projects = [
   {
     name: "FakeXpose",
-    type: "AI Fake News Detection Platform",
+    type: "AI-Powered Deepfake Detection System",
+    lead: "Multimodal deepfake detection — video, audio, and real-time webcam in one platform.",
     description:
-      "An AI-powered fake news detection web application that analyses news articles and social media content in real time. Uses machine learning models to classify content as real or fake, providing credibility scores and source verification to help users make informed decisions.",
-    image: "/Images/fakexpose.png",
+      "Built a deepfake detection platform that goes beyond just video — it simultaneously analyses audio streams using ensemble classifiers to catch AI-generated voice manipulations too. EfficientNetB0 handles the visual side, while Grad-CAM heatmaps make every decision explainable, not just a black-box percentage. Supports both uploaded videos and live webcam feeds via FastAPI.",
+    images: [
+      { src: "/Images/fakexpose-webcam.png", caption: "Live Webcam Detection" },
+      { src: "/Images/fakexpose-gradcam.png", caption: "Grad-CAM Heatmap Analysis" },
+    ],
     link: "https://github.com/rutuja-85860",
-    tags: ["React.js", "Python", "Machine Learning", "NLP", "MongoDB", "Node.js", "AI"],
+    tags: ["TensorFlow", "FastAPI", "OpenCV", "Python"],
     color: "text-violet-400",
     borderColor: "border-violet-400",
     bgGradient: "from-violet-500/10 to-purple-500/10",
@@ -37,13 +41,18 @@ const projects = [
     year: "2026",
   },
   {
-    name: "Sigro",
-    type: "Sign Language Recognition System",
+    name: "SIGRO",
+    type: "AI-Powered Smart Agriculture Assistant",
+    lead: "Farming intelligence with multilingual voice — because not every farmer speaks the same language.",
     description:
-      "A real-time sign language recognition system that bridges communication between hearing-impaired individuals and others. Uses computer vision and deep learning to detect and translate hand gestures into text and speech, making communication seamless and accessible.",
-    image: "/Images/sigro.png",
+      "An AI-driven agriculture platform that helps farmers monitor crop health, predict farming risks, and receive multilingual voice-enabled recommendations. Integrated Groq LLM, crop analysis, weather intelligence, and a Jarvis-style voice assistant to support smarter farming decisions — in the farmer's own language.",
+    images: [
+      { src: "/Images/sigro-health.png", caption: "Plant Health Check — AI Disease Detection" },
+      { src: "/Images/sigro-landing.png", caption: "Digital Harvest — Next-Gen Farming AI" },
+      { src: "/Images/sigro-dashboard.png", caption: "Farm Overview — Live Monitoring Dashboard" },
+    ],
     link: "https://github.com/rutuja-85860",
-    tags: ["Python", "OpenCV", "TensorFlow", "Deep Learning", "React.js", "Computer Vision"],
+    tags: ["ReactJS", "NodeJS", "Python", "GroqAI"],
     color: "text-cyan-400",
     borderColor: "border-cyan-400",
     bgGradient: "from-cyan-500/10 to-teal-500/10",
@@ -234,6 +243,126 @@ const SectionHeader = ({ title, subtitle, icon: Icon }) => (
     <p className="text-xl text-gray-400 max-w-2xl mx-auto">{subtitle}</p>
   </motion.div>
 );
+
+// Image carousel component for projects with multiple screenshots
+const ProjectImageCarousel = ({ project, isHovered, onMouseEnter, onMouseLeave }) => {
+  const images = project.images || [];
+  const [activeIdx, setActiveIdx] = useState(0);
+  const [fading, setFading] = useState(false);
+
+  const goTo = useCallback((idx) => {
+    if (idx === activeIdx) return;
+    setFading(true);
+    setTimeout(() => {
+      setActiveIdx(idx);
+      setFading(false);
+    }, 220);
+  }, [activeIdx]);
+
+  // Auto-advance every 3s when multiple images
+  useEffect(() => {
+    if (images.length <= 1) return;
+    const timer = setInterval(() => {
+      setFading(true);
+      setTimeout(() => {
+        setActiveIdx((prev) => (prev + 1) % images.length);
+        setFading(false);
+      }, 220);
+    }, 3000);
+    return () => clearInterval(timer);
+  }, [images.length]);
+
+  const current = images[activeIdx] || {};
+
+  return (
+    <motion.div
+      initial={{ x: project.align === "right" ? 100 : -100, opacity: 0 }}
+      whileInView={{ x: 0, opacity: 1 }}
+      transition={{ duration: 1, ease: "easeOut", delay: 0.2 }}
+      viewport={{ once: true }}
+      className="w-full sm:w-1/2 flex justify-center relative"
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
+    >
+      <div className="relative group overflow-hidden rounded-2xl w-full max-w-[440px]">
+        {/* Glow bg */}
+        <div className={`absolute inset-0 bg-gradient-to-r ${project.bgGradient} opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl`} />
+
+        <div className="relative p-2 bg-gray-800/50 backdrop-blur-sm rounded-2xl border border-gray-700/50 group-hover:border-blue-400/50 transition-all duration-500">
+          {/* Main image with fade */}
+          <div className="relative overflow-hidden rounded-xl">
+            <img
+              src={current.src}
+              alt={current.caption || project.name}
+              className="w-full rounded-xl shadow-2xl object-cover transition-all duration-700"
+              style={{
+                opacity: fading ? 0 : 1,
+                transform: isHovered ? "scale(1.04)" : "scale(1)",
+                transition: "opacity 0.22s ease, transform 0.7s ease",
+              }}
+            />
+
+            {/* Caption pill */}
+            {current.caption && (
+              <div className="absolute bottom-3 left-1/2 -translate-x-1/2">
+                <span className={`px-3 py-1 text-xs font-semibold rounded-full backdrop-blur-md bg-black/60 border whitespace-nowrap ${project.borderColor} ${project.color}`}>
+                  {current.caption}
+                </span>
+              </div>
+            )}
+
+            {/* Status badge */}
+            <div className="absolute top-3 right-3">
+              <span className={`px-3 py-1 text-xs font-bold rounded-full ${
+                project.status === "Live" ? "bg-green-500/80 text-white" : "bg-yellow-500/80 text-black"
+              } backdrop-blur-sm`}>
+                {project.status}
+              </span>
+            </div>
+
+            {/* Hover overlay */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: isHovered ? 1 : 0, y: isHovered ? 0 : 20 }}
+              transition={{ duration: 0.3 }}
+              className="absolute inset-0 bg-black/65 backdrop-blur-sm rounded-xl flex items-center justify-center"
+            >
+              <div className="text-center space-y-3">
+                <motion.a
+                  href={project.link}
+                  whileHover={{ scale: 1.08 }}
+                  whileTap={{ scale: 0.92 }}
+                  className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-lg shadow-lg"
+                >
+                  <span>View Project</span>
+                  <ExternalLink className="w-4 h-4 ml-2" />
+                </motion.a>
+                <p className="text-sm text-gray-300">Built in {project.year}</p>
+              </div>
+            </motion.div>
+          </div>
+
+          {/* Dot navigation — only if multiple images */}
+          {images.length > 1 && (
+            <div className="flex justify-center gap-2 pt-2 pb-1">
+              {images.map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => goTo(i)}
+                  className={`rounded-full transition-all duration-300 ${
+                    i === activeIdx
+                      ? `w-5 h-2 ${project.color.replace("text-", "bg-")}`
+                      : "w-2 h-2 bg-gray-600 hover:bg-gray-400"
+                  }`}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </motion.div>
+  );
+};
 
 function Project() {
   const [activeSection, setActiveSection] = useState("projects");
@@ -448,75 +577,13 @@ function Project() {
                       } hidden sm:block`}
                     />
 
-                    {/* Enhanced Project Card */}
-                    <motion.div
-                      initial={{
-                        x: project.align === "right" ? 100 : -100,
-                        opacity: 0,
-                      }}
-                      whileInView={{ x: 0, opacity: 1 }}
-                      transition={{ duration: 1, ease: "easeOut", delay: 0.2 }}
-                      viewport={{ once: true }}
-                      className="w-full sm:w-1/2 flex justify-center relative"
+                    {/* Project Image Carousel */}
+                    <ProjectImageCarousel
+                      project={project}
+                      isHovered={hoveredProject === index}
                       onMouseEnter={() => setHoveredProject(index)}
                       onMouseLeave={() => setHoveredProject(null)}
-                    >
-                      <div className="relative group overflow-hidden rounded-2xl">
-                        <div
-                          className={`absolute inset-0 bg-gradient-to-r ${project.bgGradient} opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl`}
-                        />
-                        <div className="relative p-2 bg-gray-800/50 backdrop-blur-sm rounded-2xl border border-gray-700/50 group-hover:border-blue-400/50 transition-all duration-500">
-                          <img
-                            src={project.image}
-                            alt={project.name}
-                            className={`max-w-[400px] w-full rounded-xl shadow-2xl transition-all duration-700 ${
-                              hoveredProject === index
-                                ? "scale-105 shadow-blue-500/25"
-                                : "scale-100"
-                            }`}
-                          />
-
-                          {/* Status Badge */}
-                          <div className="absolute top-4 right-4">
-                            <span
-                              className={`px-3 py-1 text-xs font-bold rounded-full ${
-                                project.status === "Live"
-                                  ? "bg-green-500/80 text-white"
-                                  : "bg-yellow-500/80 text-black"
-                              } backdrop-blur-sm`}
-                            >
-                              {project.status}
-                            </span>
-                          </div>
-
-                          {/* Enhanced Hover Overlay */}
-                          <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{
-                              opacity: hoveredProject === index ? 1 : 0,
-                              y: hoveredProject === index ? 0 : 20,
-                            }}
-                            transition={{ duration: 0.3 }}
-                            className="absolute inset-0 bg-black/70 backdrop-blur-sm rounded-xl flex items-center justify-center"
-                          >
-                            <div className="text-center space-y-4">
-                              <motion.a
-                                href={project.link}
-                                whileHover={{ scale: 1.1 }}
-                                whileTap={{ scale: 0.9 }}
-                                className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-300 shadow-lg"
-                              >
-                                <span>View Project</span>
-                                <ExternalLink className="w-4 h-4 ml-2" />
-                              </motion.a>
-                              <p className="text-sm text-gray-300">
-                                Built in {project.year}
-                              </p>
-                            </div>
-                          </motion.div>
-                        </div>
-                      </div>
-                    </motion.div>
+                    />
 
                     {/* Enhanced Project Details */}
                     <motion.div
@@ -526,21 +593,30 @@ function Project() {
                       viewport={{ once: true }}
                       className="w-full sm:w-1/2 space-y-4"
                     >
-                      <div className="space-y-2">
+                      <div className="space-y-1">
                         <h3
                           className={`font-bold text-3xl md:text-5xl ${project.color} flex items-center gap-3`}
                         >
                           {project.name}
                           <Sparkles className="w-6 h-6" />
                         </h3>
-                        <span
-                          className={`${project.color} text-lg md:text-xl font-medium opacity-80`}
-                        >
-                          {project.type}
-                        </span>
+                        <div className="flex items-center gap-3">
+                          <span
+                            className={`${project.color} text-base md:text-lg font-semibold tracking-wide`}
+                          >
+                            {project.type}
+                          </span>
+                        </div>
+                        <div className={`h-[2px] w-16 rounded-full bg-gradient-to-r ${project.bgGradient} opacity-80`} />
                       </div>
 
-                      <p className="text-base md:text-lg text-gray-300 leading-relaxed">
+                      {project.lead && (
+                        <p className={`text-sm md:text-base font-semibold ${project.color} opacity-90 italic border-l-2 ${project.borderColor} pl-3 leading-snug`}>
+                          {project.lead}
+                        </p>
+                      )}
+
+                      <p className="text-sm md:text-base text-gray-400 leading-relaxed">
                         {project.description}
                       </p>
 
